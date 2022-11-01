@@ -8,7 +8,7 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/Reelem/daemon"
+	"github.com/Releem/daemon"
 	"github.com/robfig/cron"
 )
 
