@@ -241,8 +241,8 @@ var systemVConfig = `#! /bin/sh
 #
 # Source function library.
 #
-if [ -f /etc/rc.d/init.d/functions ]; then
-    . /etc/rc.d/init.d/functions
+if [ -f /lib/lsb/init-functions ]; then
+    . /lib/lsb/init-functions
 fi
 
 exec="{{.Path}}"
@@ -256,7 +256,7 @@ stderrlog="/var/log/$proc.err"
 
 [ -d $(dirname $lockfile) ] || mkdir -p $(dirname $lockfile)
 
-[ -e /etc/sysconfig/$proc ] && . /etc/sysconfig/$proc
+	[ -e /etc/default/$proc ] && . /etc/default/$proc
 
 start() {
     [ -x $exec ] || exit 5
@@ -269,30 +269,38 @@ start() {
             fi
         fi
     fi
-
+	log_daemon_msg "Starting $proc"
     if ! [ -f $pidfile ]; then
-        printf "Starting $servname:\t"
         echo "$(date)" >> $stdoutlog
-        $exec {{.Args}} >> $stdoutlog 2>> $stderrlog &
+		log_progress_msg $proc
+		$exec  >> $stdoutlog 2>> $stderrlog &
+        return=$?
         echo $! > $pidfile
         touch $lockfile
-        success
-        echo
+		log_end_msg $return
     else
-        # failure
-        echo
-        printf "$pidfile still exists...\n"
-        exit 7
+		log_progress_msg "Already running"
+		log_end_msg 0
     fi
 }
 
 stop() {
-    echo -n $"Stopping $servname: "
-    killproc -p $pidfile $proc
-    retval=$?
-    echo
-    [ $retval -eq 0 ] && rm -f $lockfile
-    return $retval
+    log_daemon_msg "Stopping $proc"
+    if [ -f "$pidfile" ]; then
+        log_progress_msg "releem-agent"
+        killproc -p $pidfile $proc
+        RETVAL=$?
+        if [ $RETVAL -eq 0 ]; then
+            rm -f $lockfile
+            rm -f $pidfile
+        fi
+        log_end_msg $RETVAL
+    else
+        log_progress_msg "(not running)"
+        log_end_msg 0
+    fi
+    return $RETVAL
+
 }
 
 restart() {
@@ -301,7 +309,7 @@ restart() {
 }
 
 rh_status() {
-    status -p $pidfile $proc
+    status_of_proc -p $pidfile $exec $proc
 }
 
 rh_status_q() {

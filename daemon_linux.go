@@ -22,6 +22,6 @@ func newDaemon(name, description string, kind Kind, dependencies []string) (Daem
 }
 
 // Get executable path
-func execPath() (string, error) {
-	return os.Readlink("/proc/self/exe")
-}
+// func execPath() (string, error) {
+// 	return os.Readlink("/proc/self/exe")
+// }
