@@ -270,17 +270,17 @@ start() {
         fi
     fi
 	log_daemon_msg "Starting $proc"
-    if ! [ -f $pidfile ]; then
+	if ! [ -f $pidfile ]; then
         echo "$(date)" >> $stdoutlog
-		log_progress_msg $proc
-		$exec  >> $stdoutlog 2>> $stderrlog &
+        log_progress_msg $proc
+        $exec  >> $stdoutlog 2>> $stderrlog &
         return=$?
         echo $! > $pidfile
         touch $lockfile
-		log_end_msg $return
+        log_end_msg $return
     else
-		log_progress_msg "Already running"
-		log_end_msg 0
+        log_progress_msg "Already running"
+        log_end_msg 0
     fi
 }
 
